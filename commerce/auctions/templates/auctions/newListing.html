@@ -4,6 +4,7 @@
     <form action="{% url 'newListing' %}" method="post">
 		{% csrf_token %}
 		{{listingForm}}
-		<input type="submit" value="Add Listing">
+		<input type="text" name="owner" id="" value="{{user.id}}" hidden>
+		<input type="submit" value="Add Listing" class="btn btn-primary">
 	</form>
 {% endblock %}
