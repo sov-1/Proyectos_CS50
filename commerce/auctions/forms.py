@@ -18,3 +18,10 @@ class NewListing(forms.Form):
 	)
     image = forms.URLField(label="URL to product image", required=False)
     category = forms.CharField(label="Categories", required=False)
+    
+
+class NewComment(forms.Form):
+    stars = forms.IntegerField(min_value=1, max_value=5, label="Starts")
+    comment = forms.CharField(label="Describe your thougths")
+    owner = forms.CharField(required=True)
+    listing = forms.IntegerField(required=True)
