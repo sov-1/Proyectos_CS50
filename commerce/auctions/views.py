@@ -83,6 +83,7 @@ def new_listing(request):
             l.bid = listingForm.cleaned_data["bid"]
             l.image = listingForm.cleaned_data["image"]
             l.category = listingForm.cleaned_data["category"]
+            l.owner = User.objects.get( pk=int( request.POST["owner"] ) )
             l.save()
 
             return HttpResponseRedirect(reverse("index"))
@@ -98,7 +99,38 @@ def new_listing(request):
 
 def listing_item(request, id):
     l = Listings.objects.get(pk=id)
-
+    c = Comments.objects.filter(listing=id)
+    b = Bids.objects.filter(listing = id)
     return render(request, "auctions/itemListing.html", {
-        "item": l
+        "item": l,
+        "comments":c,
+        "offers":b
     })
+
+@login_required(login_url='login')
+def new_comment(request):
+    if request.method == 'POST':
+        commentForm = NewComment(request.POST)
+        if commentForm.is_valid():
+            c = Comments()
+            c.stars = commentForm.cleaned_data["stars"]
+            c.comment = commentForm.cleaned_data["comment"]
+            c.owner = User.objects.get(pk=int(commentForm.cleaned_data["owner"]) )
+            c.listing = Listings.objects.get(pk=int(commentForm.cleaned_data["listing"]))
+            c.save()
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            pass
+
+
+@login_required(login_url='login')
+def new_bid(request):
+    if request.method == 'POST':
+        b = Bids()
+        b.bid = int(request.POST["offerBid"])
+        b.owner = User.objects.get( pk=int(request.POST["owner"]) )
+        b.listing = Listings.objects.get( pk=int(request.POST["listing"]) )
+        b.save()
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        pass
