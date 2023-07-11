@@ -1,15 +1,24 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-	<img src="{{item.image}}" alt="Img">
-    <h2>Title: {{item.title}} </h2>
-	<h5>Price $ {{item.bid}}</h5>
+	<h2>Listing: {{item.title}} </h2>
+	<img src="{{item.image}}" alt="Img" style="max-height: 350px;">
+	<h3>   $ {{item.bid}}</h3>
 	
+	<sub>Previous Bid: 
+		{% for offer in offers %}
+			${{offer.bid}} 
+		{% endfor %}
+	</sub>
 	{% if user.is_authenticated %}
-		<form action="" method="post">
+		<form action="{% url 'newBid' %}" method="post">
 			{% csrf_token %}
-			formulario para ofertar
-			<input type="submit" value="Make bid">
+			
+			<input type="text" name="owner" id="" value="{{user.id}}" hidden>
+			<input type="text" name="listing" id="" value="{{item.id}}" hidden>
+			<input type="number" name="offerBid" id="" min="{{item.bid}}" class="form-control" placeholder="make a bid">
+			<p></p>
+			<input type="submit" value="Place bid" class="btn btn-primary">
 		</form>
 
 		<div class="watchlist">
@@ -19,17 +28,39 @@
 
 	<p>Description {{item.description}} </p>
 	<p>Tags {{item.category}} </p>
+	<p>Published by {{item.owner}}</p>
 	<sub>Date of article creation {{item.dateCreated}} </sub>
+	<p>{{ u }}</p>
 	<br>
 	<hr>
 	<br>
 
 	{% if user.is_authenticated %}
-		<form action="" method="post">
+		<form action="{% url 'newComment' %}" method="post">
 			{% csrf_token %}
 			formulario para agregar comentarios
-			<input type="submit" value="Post">
+			<input type="number" name="stars" id="" min="1" max="5">
+			<input type="text" name="comment" id="" class="form-control">
+			<input type="text" name="owner" id="" hidden value="{{user.id}}">
+			<input type="text" name="listing" id="" hidden value="{{item.id}}">
+			<input type="submit" value="Post" class="btn btn-primary">
 		</form>
 	{% endif %}
+
+	
 	<p>Comments To Do +</p>
+	{% for comment in comments %}
+		<div class="card">
+			<div class="primero">
+				<div>
+					<p>Stars: {{comment.stars}} </p>
+					<p>By: {{comment.owner}} </p>
+					<p>on {{comment.date}} </p>
+				</div>
+			</div>
+			<div class="card-text segundo">
+				<p>{{comment.comment}}</p>
+			</div>
+		</div>
+	{% endfor %}
 {% endblock %}
