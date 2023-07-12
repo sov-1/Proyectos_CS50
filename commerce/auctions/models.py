@@ -37,3 +37,10 @@ class Bids(models.Model):
 	def __str__(self):
 		return f"User {self.owner} offer ${self.bid} on Listing: {self.listing}"
 	
+
+class Watchlists(models.Model):
+	owner = models.ForeignKey(User, on_delete=models.CASCADE)
+	products = models.ForeignKey(Listings, on_delete=models.CASCADE, blank=True, related_name="listing")
+
+	def __str__(self):
+		return f"Watchlis from user {self.owner}, products: {self.products}"
