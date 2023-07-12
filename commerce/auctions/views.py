@@ -134,3 +134,22 @@ def new_bid(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         pass
+    
+@login_required(login_url='login')
+def watchlist(request, itemId, userId):
+    l = Listings.objects.get(pk=itemId)
+    u = User.objects.get(pk=userId)
+    w = Watchlists.objects.filter(owner=userId, products=itemId)
+
+    list = Watchlists()
+    list.owner = u
+    list.products = l
+    list.save()
+    
+    return HttpResponseRedirect(reverse("index"))
+
+def view_watchlist(request):
+    w = Watchlists.objects.filter(owner = 3)
+    return render(request, "auctions/watchlist.html",{
+        "listings": w
+    })
