@@ -22,7 +22,7 @@
 		</form>
 
 		<div class="watchlist">
-			<a href="">Add to watchList (Icon to do)</a>
+			<a href="{% url 'watchlist' item.id user.id %}">Add to watchList (Icon to do)</a>
 		</div>
 	{% endif %}
 
