@@ -15,6 +15,7 @@ class Listings(models.Model):
 	category = models.CharField(max_length=100)
 	dateCreated = models.DateTimeField(auto_now=True)
 	owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="creator")
+	active = models.BooleanField(default=True)
         
 	def __str__(self):
 		  return f"Listing {self.id}, article {self.title}, categories: {self.category}"
