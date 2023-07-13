@@ -5,6 +5,7 @@
 	<br>
 
     {% for listing in listings %}
+	{% if listing.active == True %}
 		<div class="article card">
 			<a href="{% url 'itemListing' listing.id %}" style="text-decoration: none; color: black;">
 				<div class="col-md-4">
@@ -19,5 +20,6 @@
 			</a>
 		</div>
 		<br>
+	{% endif %}
 	{% endfor %}
 {% endblock %}
