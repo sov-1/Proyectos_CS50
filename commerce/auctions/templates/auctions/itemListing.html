@@ -1,22 +1,46 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-	<h2>Listing: {{item.title}} </h2>
+	<h2>
+		{% if item.active == True %}
+			Listing: {{item.title}}
+		{% else %}
+			Listing: {{item.title}}   CLOSED
+		{% endif %} 
+	</h2>
 	<img src="{{item.image}}" alt="Img" style="max-height: 350px;">
-	<h3>   $ {{item.bid}}</h3>
+	<h3>   
+		{% if item.active == True %}
+			$ {{item.bid}}
+		{% else %}
+			Sold for ${{higherBid}}
+			{% if request.user == higherBidUser %}
+			 	to YOU ({{higherBidUser}})
+			{% elif item.owner == request.user %}
+				to {{higherBidUser}}
+			{% endif %}
+		{% endif %} 
+	</h3>
 	
 	<sub>Previous Bid: 
-		{% for offer in offers %}
-			${{offer.bid}} 
-		{% endfor %}
+		{% if higherBid <= item.bid %}
+			No bids yet
+		{% else %}
+			${{higherBid}}
+		{% endif %}
 	</sub>
-	{% if user.is_authenticated %}
+
+	{% if user.is_authenticated and item.active == True %}
 		<form action="{% url 'newBid' %}" method="post">
 			{% csrf_token %}
 			
 			<input type="text" name="owner" id="" value="{{user.id}}" hidden>
 			<input type="text" name="listing" id="" value="{{item.id}}" hidden>
-			<input type="number" name="offerBid" id="" min="{{item.bid}}" class="form-control" placeholder="make a bid">
+			{% if higherBid <= item.bid %}
+				<input type="number" name="offerBid" id="" min="{{item.bid}}" class="form-control" placeholder="make a bid">
+			{% else %}
+				<input type="number" name="offerBid" id="" min="{{higherBid}}" class="form-control" placeholder="make a bid">
+			{% endif %}
 			<p></p>
 			<input type="submit" value="Place bid" class="btn btn-primary">
 		</form>
@@ -30,7 +54,19 @@
 	<p>Tags {{item.category}} </p>
 	<p>Published by {{item.owner}}</p>
 	<sub>Date of article creation {{item.dateCreated}} </sub>
-	<p>{{ u }}</p>
+		
+	{% if request.user == item.owner %}
+		<form action="{% url 'changeStateAuction' %}" method="post">
+			{% csrf_token %}
+			<input type="text" name="itemToChange" id="" value="{{item.id}}" hidden>
+		{% if item.active %}
+			<input type="submit" value="Close auction" class="btn btn-primary">
+		{% else %}
+			<input type="submit" value="Open auction" class="btn btn-primary">
+		{% endif %}
+		</form>
+	{% endif %}
+
 	<br>
 	<hr>
 	<br>
@@ -38,9 +74,10 @@
 	{% if user.is_authenticated %}
 		<form action="{% url 'newComment' %}" method="post">
 			{% csrf_token %}
-			formulario para agregar comentarios
+			<p>Add a comment:</p>
+			<label for="stars">Stars rate</label>
 			<input type="number" name="stars" id="" min="1" max="5">
-			<input type="text" name="comment" id="" class="form-control">
+			<input type="text" name="comment" id="" class="form-control" placeholder="Write the comment">
 			<input type="text" name="owner" id="" hidden value="{{user.id}}">
 			<input type="text" name="listing" id="" hidden value="{{item.id}}">
 			<input type="submit" value="Post" class="btn btn-primary">
@@ -48,7 +85,7 @@
 	{% endif %}
 
 	
-	<p>Comments To Do +</p>
+	<h3>Comments:</h3>
 	{% for comment in comments %}
 		<div class="card">
 			<div class="primero">
@@ -62,5 +99,6 @@
 				<p>{{comment.comment}}</p>
 			</div>
 		</div>
+		<br>
 	{% endfor %}
 {% endblock %}
