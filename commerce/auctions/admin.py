@@ -4,7 +4,7 @@ from .models import *
 
 # Register your models here.
 class ListingsAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "description", "image", "dateCreated")
+    list_display = ("id", "title", "description", "image", "dateCreated", "active")
 
 class CommentsAdmin(admin.ModelAdmin):
     list_display = ("id", "stars", "owner", "listing")
