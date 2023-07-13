@@ -101,10 +101,20 @@ def listing_item(request, id):
     l = Listings.objects.get(pk=id)
     c = Comments.objects.filter(listing=id)
     b = Bids.objects.filter(listing = id)
+    u = 'none user bid yet'
+	# find higher bid
+    h = l.bid 
+    for offers in b:
+        if offers.bid > h:
+            h = offers.bid
+            u = offers.owner
+
     return render(request, "auctions/itemListing.html", {
         "item": l,
         "comments":c,
-        "offers":b
+        "offers":b,
+        "higherBid": h,
+        "higherBidUser": u
     })
 
 @login_required(login_url='login')
@@ -118,7 +128,7 @@ def new_comment(request):
             c.owner = User.objects.get(pk=int(commentForm.cleaned_data["owner"]) )
             c.listing = Listings.objects.get(pk=int(commentForm.cleaned_data["listing"]))
             c.save()
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("itemListing", kwargs={'id':commentForm.cleaned_data["listing"] }))
         else:
             pass
 
@@ -131,10 +141,22 @@ def new_bid(request):
         b.owner = User.objects.get( pk=int(request.POST["owner"]) )
         b.listing = Listings.objects.get( pk=int(request.POST["listing"]) )
         b.save()
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("itemListing", kwargs={'id':request.POST["listing"]}))
     else:
         pass
     
+def changeStateAuction(request):
+    if request.method == 'POST':
+        item = request.POST["itemToChange"]
+        l = Listings.objects.get(pk=int(item))
+        if l.active == True:
+            l.active = False
+        else:
+            l.active = True
+        l.save()
+        return HttpResponseRedirect(reverse('itemListing', kwargs={'id':item}))
+    return HttpResponseRedirect(reverse('index'))
+
 @login_required(login_url='login')
 def watchlist(request, itemId, userId):
     l = Listings.objects.get(pk=itemId)
