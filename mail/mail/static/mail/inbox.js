@@ -46,11 +46,15 @@ function load_mailbox(mailbox) {
 // print list of mails on <mailbox>
 function list_mail(mail){
 	const element = document.createElement('div');
-	element.className = 'list-mail card';
-	element.innerHTML = `<h3 class='card-title'>${mail.sender}</h3> 
-						<p class='card-text'>${mail.subject}</p>
-						<p class='card-text timestamp'>${mail.timestamp}</p>`;
+	element.className = `list-mail card row mb-3`;
+	element.id = mail.id;
+	element.dataset.mail = mail.id;
+	element.innerHTML = `<h3 class='card-title col-md-4'>${mail.sender}</h3> 
+						<p class='card-text col-md-4'>${mail.subject}</p>
+						<div class='text-muted col-md-4'>${mail.timestamp}</div>`;
 	document.querySelector('#emails-view').append(element);
+
+	element.addEventListener('click', read_mail);
 }
 
 // send mail with data packaged in JSON
@@ -73,4 +77,34 @@ function send_mail(){
 	    console.log(result);
 	});
 	load_mailbox('sent');
+}
+
+function read_mail(element) {
+	let id;
+
+	// get mail id from the clicked element
+	if (element.target.dataset.mail == undefined){
+		// console.log(element.target.parentElement.dataset.mail);
+		id = element.target.parentElement.dataset.mail;
+	} else {
+		// console.log(element.target.dataset.mail);
+		id = element.target.dataset.mail;
+	}
+
+	fetch(`emails/${id}`)
+  	.then(response =>	response.json() )
+  	.then(email => {
+		let mail = document.createElement('div').innerHTML = `<h5><b>From: </b>${email.sender}</h5>
+			<h5><b>To: </b>${email.recipients}</h5>
+			<h5><b>Subject: </b>${email.subject}</h5>
+			<h5><b>TimeStamp: </b>${email.timestamp}</h5>
+			<button class="btn btn-sm btn-outline-primary" id="reply" >Reply</button>
+			<button class="btn btn-sm btn-outline-primary" id="archive" >Archive</button>
+			<hr>
+			<br>
+			<p>${email.body}</p>`;
+		
+		document.querySelector('#emails-view').innerHTML = mail;
+  	})
+
 }
