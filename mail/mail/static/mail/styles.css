@@ -1,3 +1,13 @@
 textarea {
     min-height: 400px;
 }
+
+.list-mail {
+	margin-bottom: 1rem;
+}
+ .list-mail > * {
+	display: inline-flex;
+ }
+ .list-mail > h3 {
+	text-align: left;
+ }
