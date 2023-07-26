@@ -38,15 +38,21 @@ function load_mailbox(mailbox) {
   fetch(`emails/${mailbox}`)
   .then(response =>	response.json() )
   .then(emails => {
-	console.log(emails);
 	emails.forEach(list_mail);
   })
 }
 
 // print list of mails on <mailbox>
 function list_mail(mail){
+
+	let readed;
+	if (mail.read === true) {
+		readed = " read";
+	} else {
+		readed = "";
+	}
 	const element = document.createElement('div');
-	element.className = `list-mail card row mb-3`;
+	element.className = `list-mail card row mb-3` + readed;
 	element.id = mail.id;
 	element.dataset.mail = mail.id;
 	element.innerHTML = `<h3 class='card-title col-md-4'>${mail.sender}</h3> 
@@ -77,6 +83,7 @@ function send_mail(){
 	    console.log(result);
 	});
 	load_mailbox('sent');
+	return false;
 }
 
 function read_mail(element) {
@@ -91,20 +98,77 @@ function read_mail(element) {
 		id = element.target.dataset.mail;
 	}
 
+	// mark mail as read
+	fetch(`/emails/${id}`, {
+		method: 'PUT',
+		body: JSON.stringify({
+			read: true
+		})
+	  })
+	  
+
 	fetch(`emails/${id}`)
   	.then(response =>	response.json() )
   	.then(email => {
-		let mail = document.createElement('div').innerHTML = `<h5><b>From: </b>${email.sender}</h5>
+		// identify actual archive state for any email, modify shown text on UI
+		let archiveState;
+		if (email.archived === true){
+			archiveState = "Unarchive";
+		} else {
+			archiveState = "Archive";
+		}
+
+		// HTML element and content to show
+		let mail = document.createElement('div').innerHTML = 
+			`<h5><b>From: </b>${email.sender}</h5>
 			<h5><b>To: </b>${email.recipients}</h5>
 			<h5><b>Subject: </b>${email.subject}</h5>
 			<h5><b>TimeStamp: </b>${email.timestamp}</h5>
 			<button class="btn btn-sm btn-outline-primary" id="reply" >Reply</button>
-			<button class="btn btn-sm btn-outline-primary" id="archive" >Archive</button>
+			<button class="btn btn-sm btn-outline-primary" id="archive" >${archiveState}</button>
 			<hr>
 			<br>
 			<p>${email.body}</p>`;
 		
 		document.querySelector('#emails-view').innerHTML = mail;
-  	})
 
+		// what to do when "Archive button" is pressed
+		document.querySelector('#archive').addEventListener('click', function (){
+			
+			if (email.archived === false){
+				fetch(`/emails/${email.id}`, {
+					method: 'PUT',
+					body: JSON.stringify({
+						archived: true
+					})
+				})
+			} else {
+				fetch(`/emails/${email.id}`, {
+					method: 'PUT',
+					body: JSON.stringify({
+						archived: false
+					})
+				})
+			}
+			
+			load_mailbox('inbox');
+		});
+
+		// what to do when "Reply button" is pressed
+		document.querySelector('#reply').addEventListener('click', function () {
+
+			let subjectMail = email.subject;
+			let newSubject;
+			if (subjectMail.includes("Re: ")) {
+				newSubject = subjectMail;
+			} else {
+				newSubject = "Re: " + subjectMail;
+			}
+
+			compose_email();
+			document.querySelector('#compose-recipients').value = email.recipients;
+			document.querySelector('#compose-subject').value = newSubject;
+			document.querySelector('#compose-body').value = `\n \nOn ${email.timestamp} ${email.sender} wrote: \n  "${email.body}". `;
+		} );
+  	})
 }
