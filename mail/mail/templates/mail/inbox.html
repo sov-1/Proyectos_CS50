@@ -1,6 +1,15 @@
 {% extends "mail/layout.html" %}
 {% load static %}
 
+{% block styles %}
+<style>
+	.read {
+		background-color: whitesmoke;
+	}
+</style>
+{% endblock %}
+
+
 {% block body %}
     <h2>{{ request.user.email }}</h2>
 
